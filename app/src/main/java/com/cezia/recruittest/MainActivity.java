@@ -1,7 +1,9 @@
 package com.cezia.recruittest;
 
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
@@ -69,18 +71,37 @@ public class MainActivity extends AppCompatActivity {
                         realm.copyToRealm(caseRecordList);
                     }
                 });
-                //TODO show all records from the database in UI
+                //show all records from the database in UI
+                showRecView();
             }
 
             @Override
             public void onError(Throwable throwable) {
                 Log.d("debug", "onError: " + throwable);
-                //TODO when an error is still shown all old records from the database in UI
+                //when an error is still shown all old records from the database in UI
+                showRecView();
             }
 
             @Override
             public void onComplete() {
             }
         });
+    }
+
+    void showRecView() {
+        final Context context = this;
+        Realm.getDefaultInstance().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                RealmResults<CaseRecordList> realmold = realm.where(CaseRecordList.class).findAll();
+                if (!realmold.isEmpty()) {
+                    //if the database is not empty, shown list of records through the adapter
+                    vRecView.setAdapter(new AdapterRecyclerView(realmold.get(0)));
+                    vRecView.setLayoutManager(new LinearLayoutManager(context));
+                }
+
+            }
+        });
+
     }
 }
