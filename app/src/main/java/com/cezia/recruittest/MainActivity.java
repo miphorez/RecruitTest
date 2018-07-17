@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.cezia.recruittest.structure.CaseRecordAPI;
 import com.cezia.recruittest.structure.CaseRecordList;
@@ -34,10 +35,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         vRecView = (RecyclerView) findViewById(R.id.recycler_view);
+
+        showDataFromServer();
+    }
+
+    void showDataFromServer(){
         //creating a request for data from the server
         Observable observable = createRequest("https://sandbox.1click2deliver.com:10999/panel/proxy.php/?action=getStatuses");
         observable = observable.subscribeOn(Schedulers.io());
         observable = observable.observeOn(AndroidSchedulers.mainThread());
+
         //subscription to data received from the server
         observable.subscribe(new Observer<String>() {
             @Override
@@ -96,7 +103,10 @@ public class MainActivity extends AppCompatActivity {
                 RealmResults<CaseRecordList> realmold = realm.where(CaseRecordList.class).findAll();
                 if (!realmold.isEmpty()) {
                     //if the database is not empty, shown list of records through the adapter
-                    vRecView.setAdapter(new AdapterRecyclerView(realmold.get(0)));
+                    AdapterRecyclerView adapter = new AdapterRecyclerView(realmold.get(0));
+                    //Send a callback to the adapter to update the data
+                    adapter.setCallbackForRefresh(mCallback);
+                    vRecView.setAdapter(adapter);
                     vRecView.setLayoutManager(new LinearLayoutManager(context));
                 }
 
@@ -104,4 +114,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+    private IRecyclerViewListener mCallback = new IRecyclerViewListener() {
+        @Override
+        public void onPullToRefresh() {
+            // callback for refresh
+            Toast.makeText(getApplicationContext(),"updating data",Toast.LENGTH_SHORT).show();
+            showDataFromServer();
+        }
+    };
 }

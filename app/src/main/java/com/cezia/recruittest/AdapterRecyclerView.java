@@ -1,7 +1,6 @@
 package com.cezia.recruittest;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +15,12 @@ import io.realm.RealmList;
 
 public class AdapterRecyclerView extends RecyclerView.Adapter<RecHolder> {
     private RealmList<CaseRecord> records;
+
+    //organizing a callback for managing the refresh
+    private IRecyclerViewListener mCallback;
+    public void setCallbackForRefresh(IRecyclerViewListener callback) {
+        mCallback = callback;
+    }
 
     public AdapterRecyclerView(CaseRecordList records) {
         this.records = records.getItems();
@@ -33,7 +38,8 @@ public class AdapterRecyclerView extends RecyclerView.Adapter<RecHolder> {
         CaseRecord record = records.get(position);
         if (holder != null) holder.bind(record);
         if (position == records.size()-1){
-            Log.w("test", "position: is last");
+            if(mCallback != null)
+                mCallback.onPullToRefresh();
         }
     }
 
@@ -65,7 +71,7 @@ class RecHolder extends RecyclerView.ViewHolder{
             //It is assumed that this field contains a link to the image
             Picasso.with(vThumbn.getContext()).load(record.getIcon_name()).into(vThumbn);
         }else {
-            //if the field is empty - show a blank image
+            //if the field is empty - show a stub-image
             vThumbn.setImageResource(R.drawable.cat_100);
         }
     }
