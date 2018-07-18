@@ -32,7 +32,6 @@ public class Utils {
                             observableEmitter.onError(new RuntimeException("Error: Not url connection"));
                             return;
                         }
-//                       Log.d("debug", "responseCode: " + urlConnection.getResponseCode());
                         if (urlConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                             observableEmitter.onError(new RuntimeException(urlConnection.getResponseMessage()));
                         } else {
